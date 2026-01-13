@@ -1,4 +1,14 @@
 // Hybrid store that can use either memory or database backend
+//
+// Architecture: Adapter Pattern
+// HybridStore provides a unified interface that adapts between two different storage implementations:
+// - MemoryStore: In-memory storage for development (simple map-based)
+// - DatabaseService: PostgreSQL storage for production (repository-based)
+//
+// The adapter automatically detects which backend to use based on DATABASE_URL environment variable.
+// This enables zero-configuration switching between development (no database) and production (PostgreSQL).
+//
+// The if/else routing in each method is intentional adapter logic, not code duplication.
 package data
 
 import (

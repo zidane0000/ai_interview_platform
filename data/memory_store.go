@@ -28,9 +28,6 @@ func NewMemoryStore() *MemoryStore {
 	}
 }
 
-// Global memory store instance
-var Store = NewMemoryStore()
-
 // Interview operations
 func (ms *MemoryStore) CreateInterview(interview *Interview) error {
 	ms.mu.Lock()
