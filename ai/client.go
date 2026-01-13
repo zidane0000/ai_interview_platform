@@ -165,8 +165,15 @@ func buildChatMessages(history []map[string]string, userMessage, language string
 	for _, msg := range history {
 		if role, ok := msg["role"]; ok {
 			if content, ok := msg["content"]; ok {
+				// Convert "ai" role to "assistant" for OpenAI API compatibility
+				// Database stores as "ai"/"user", but OpenAI API expects "assistant"/"user"
+				apiRole := role
+				if role == "ai" {
+					apiRole = "assistant"
+				}
+
 				messages = append(messages, Message{
-					Role:    role,
+					Role:    apiRole,
 					Content: content,
 				})
 			}

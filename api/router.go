@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/zidane0000/ai-interview-platform/ai"
 	"github.com/zidane0000/ai-interview-platform/config"
 	"github.com/zidane0000/ai-interview-platform/utils"
 )
@@ -14,18 +13,11 @@ import (
 // Config is injected from main.go to avoid loading configuration multiple times
 // frontendHandler is optional - if provided, serves SPA at root
 func SetupRouter(cfg *config.Config, frontendHandler http.Handler) http.Handler {
-	// Create AI client with configuration (simplified - no factory pattern)
-	aiConfig := ai.NewDefaultAIConfig()
-	aiClient, err := ai.NewAIClient(aiConfig)
-	if err != nil {
-		utils.Errorf("Failed to create AI client: %v", err)
-		// Fall back to mock provider if client creation fails
-		aiConfig.DefaultProvider = ai.ProviderMock
-		aiClient, _ = ai.NewAIClient(aiConfig)
-	}
+	// BYOK pattern: AI clients created per-request from user-provided keys
+	// No shared client needed - see createClientFromRequest() in handlers.go
 
-	// Create handler dependencies
-	deps := NewHandlerDependencies(aiClient)
+	// Create handler dependencies (currently empty - BYOK uses per-request clients)
+	deps := NewHandlerDependencies()
 
 	r := chi.NewRouter()
 

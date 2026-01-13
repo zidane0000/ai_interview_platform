@@ -66,10 +66,16 @@ type openAIError struct {
 
 // NewOpenAIProvider creates a new OpenAI provider
 func NewOpenAIProvider(apiKey string, config *AIConfig) *OpenAIProvider {
+	// Use custom base URL if provided, otherwise default to OpenAI
+	baseURL := config.OpenAIBaseURL
+	if baseURL == "" {
+		baseURL = "https://api.openai.com/v1"
+	}
+
 	return &OpenAIProvider{
 		apiKey:  apiKey,
 		config:  config,
-		baseURL: "https://api.openai.com/v1",
+		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: config.RequestTimeout,
 		},

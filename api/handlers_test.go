@@ -24,7 +24,8 @@ func setupTestRouter() http.Handler {
 		GeminiAPIKey:    "test-gemini-key",
 		ShutdownTimeout: 30 * time.Second,
 	}
-	return SetupRouter(testConfig)
+	// No frontend handler needed for tests (nil)
+	return SetupRouter(testConfig, nil)
 }
 
 // clearMemoryStore clears all data from the memory store for test isolation
@@ -40,7 +41,7 @@ func clearMemoryStore() {
 func createTestInterview(t *testing.T, router http.Handler, req CreateInterviewRequestDTO) InterviewResponseDTO {
 	t.Helper()
 	b, _ := json.Marshal(req)
-	httpReq := httptest.NewRequest("POST", "/interviews", bytes.NewReader(b))
+	httpReq := httptest.NewRequest("POST", "/api/interviews", bytes.NewReader(b))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, httpReq)
 
@@ -63,7 +64,7 @@ func startChatSession(t *testing.T, router http.Handler, interviewID string, req
 		body, _ = json.Marshal(req)
 	}
 
-	httpReq := httptest.NewRequest("POST", "/interviews/"+interviewID+"/chat/start", bytes.NewReader(body))
+	httpReq := httptest.NewRequest("POST", "/api/interviews/"+interviewID+"/chat/start", bytes.NewReader(body))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, httpReq)
 
@@ -84,7 +85,7 @@ func sendMessage(t *testing.T, router http.Handler, sessionID, message string) S
 	req := SendMessageRequestDTO{Message: message}
 	b, _ := json.Marshal(req)
 
-	httpReq := httptest.NewRequest("POST", "/chat/"+sessionID+"/message", bytes.NewReader(b))
+	httpReq := httptest.NewRequest("POST", "/api/chat/"+sessionID+"/message", bytes.NewReader(b))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, httpReq)
 
@@ -151,7 +152,7 @@ func TestCreateInterviewHandler_Success(t *testing.T) {
 	}
 
 	b, _ := json.Marshal(req)
-	httpReq := httptest.NewRequest("POST", "/interviews", bytes.NewReader(b))
+	httpReq := httptest.NewRequest("POST", "/api/interviews", bytes.NewReader(b))
 	w := httptest.NewRecorder()
 	CreateInterviewHandler(w, httpReq)
 
@@ -164,12 +165,12 @@ func TestCreateInterviewHandler_BadRequest(t *testing.T) {
 	router := setupTestRouter()
 
 	// Invalid JSON
-	expectHTTPError(t, router, "POST", "/interviews", []byte("{"), http.StatusBadRequest)
+	expectHTTPError(t, router, "POST", "/api/interviews", []byte("{"), http.StatusBadRequest)
 
 	// Missing fields
 	emptyReq := CreateInterviewRequestDTO{}
 	b, _ := json.Marshal(emptyReq)
-	expectHTTPError(t, router, "POST", "/interviews", b, http.StatusBadRequest)
+	expectHTTPError(t, router, "POST", "/api/interviews", b, http.StatusBadRequest)
 }
 
 func TestCreateInterviewHandler_EdgeCases(t *testing.T) {
@@ -220,7 +221,7 @@ func TestCreateInterviewHandler_EdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b, _ := json.Marshal(tt.body)
-			expectHTTPError(t, router, "POST", "/interviews", b, tt.expectedStatus)
+			expectHTTPError(t, router, "POST", "/api/interviews", b, tt.expectedStatus)
 		})
 	}
 }
@@ -228,7 +229,7 @@ func TestCreateInterviewHandler_EdgeCases(t *testing.T) {
 func TestListInterviewsHandler_Empty(t *testing.T) {
 	clearMemoryStore() // Clear store for test isolation
 	router := setupTestRouter()
-	req := httptest.NewRequest("GET", "/interviews", nil)
+	req := httptest.NewRequest("GET", "/api/interviews", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -264,7 +265,7 @@ func TestListInterviewsHandler_WithData(t *testing.T) {
 	}
 
 	// Test listing all interviews
-	req := httptest.NewRequest("GET", "/interviews", nil)
+	req := httptest.NewRequest("GET", "/api/interviews", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -297,7 +298,7 @@ func TestListInterviewsHandler_Pagination(t *testing.T) {
 			InterviewType: "general", // Add required interview type
 		}
 		b, _ := json.Marshal(interview)
-		req := httptest.NewRequest("POST", "/interviews", bytes.NewReader(b))
+		req := httptest.NewRequest("POST", "/api/interviews", bytes.NewReader(b))
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 		if w.Code != http.StatusCreated {
@@ -306,7 +307,7 @@ func TestListInterviewsHandler_Pagination(t *testing.T) {
 	}
 
 	// Test pagination with limit=2
-	req := httptest.NewRequest("GET", "/interviews?limit=2", nil)
+	req := httptest.NewRequest("GET", "/api/interviews?limit=2", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -326,7 +327,7 @@ func TestListInterviewsHandler_Pagination(t *testing.T) {
 	}
 
 	// Test pagination with offset
-	req = httptest.NewRequest("GET", "/interviews?limit=2&offset=2", nil)
+	req = httptest.NewRequest("GET", "/api/interviews?limit=2&offset=2", nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -358,7 +359,7 @@ func TestListInterviewsHandler_Filtering(t *testing.T) {
 
 	for _, interview := range interviews {
 		b, _ := json.Marshal(interview)
-		req := httptest.NewRequest("POST", "/interviews", bytes.NewReader(b))
+		req := httptest.NewRequest("POST", "/api/interviews", bytes.NewReader(b))
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 		if w.Code != http.StatusCreated {
@@ -367,7 +368,7 @@ func TestListInterviewsHandler_Filtering(t *testing.T) {
 	}
 
 	// Test filtering by candidate name
-	req := httptest.NewRequest("GET", "/interviews?candidate_name=Alice", nil)
+	req := httptest.NewRequest("GET", "/api/interviews?candidate_name=Alice", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -407,7 +408,7 @@ func TestListInterviewsHandler_Sorting(t *testing.T) {
 
 	for _, interview := range interviews {
 		b, _ := json.Marshal(interview)
-		req := httptest.NewRequest("POST", "/interviews", bytes.NewReader(b))
+		req := httptest.NewRequest("POST", "/api/interviews", bytes.NewReader(b))
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 		if w.Code != http.StatusCreated {
@@ -418,7 +419,7 @@ func TestListInterviewsHandler_Sorting(t *testing.T) {
 	}
 
 	// Test sorting by name ascending
-	req := httptest.NewRequest("GET", "/interviews?sort_by=name&sort_order=asc", nil)
+	req := httptest.NewRequest("GET", "/api/interviews?sort_by=name&sort_order=asc", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -445,7 +446,7 @@ func TestListInterviewsHandler_Sorting(t *testing.T) {
 
 func TestGetInterviewHandler_BadRequest(t *testing.T) {
 	router := setupTestRouter()
-	req := httptest.NewRequest("GET", "/interviews/", nil)
+	req := httptest.NewRequest("GET", "/api/interviews/", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -464,7 +465,7 @@ func TestGetInterviewHandler_Success(t *testing.T) {
 		InterviewType: "general", // Add required interview type
 	}
 	b, _ := json.Marshal(createBody)
-	createReq := httptest.NewRequest("POST", "/interviews", bytes.NewReader(b))
+	createReq := httptest.NewRequest("POST", "/api/interviews", bytes.NewReader(b))
 	createW := httptest.NewRecorder()
 	router.ServeHTTP(createW, createReq)
 	if createW.Code != http.StatusCreated {
@@ -476,7 +477,7 @@ func TestGetInterviewHandler_Success(t *testing.T) {
 	}
 
 	// Step 2: Use the real ID for GET
-	req := httptest.NewRequest("GET", "/interviews/"+createdResp.ID, nil)
+	req := httptest.NewRequest("GET", "/api/interviews/"+createdResp.ID, nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -504,7 +505,7 @@ func TestSubmitEvaluationHandler_Success(t *testing.T) {
 	b, _ := json.Marshal(body)
 
 	router := setupTestRouter()
-	req := httptest.NewRequest("POST", "/evaluation", bytes.NewReader(b))
+	req := httptest.NewRequest("POST", "/api/evaluation", bytes.NewReader(b))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -516,7 +517,7 @@ func TestSubmitEvaluationHandler_BadRequest(t *testing.T) {
 	router := setupTestRouter()
 
 	// Invalid JSON
-	req := httptest.NewRequest("POST", "/evaluation", bytes.NewReader([]byte("{")))
+	req := httptest.NewRequest("POST", "/api/evaluation", bytes.NewReader([]byte("{")))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusBadRequest {
@@ -526,7 +527,7 @@ func TestSubmitEvaluationHandler_BadRequest(t *testing.T) {
 	// Missing fields
 	body := SubmitEvaluationRequestDTO{}
 	b, _ := json.Marshal(body)
-	req = httptest.NewRequest("POST", "/evaluation", bytes.NewReader(b))
+	req = httptest.NewRequest("POST", "/api/evaluation", bytes.NewReader(b))
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusBadRequest {
@@ -536,7 +537,7 @@ func TestSubmitEvaluationHandler_BadRequest(t *testing.T) {
 
 func TestGetEvaluationHandler_BadRequest(t *testing.T) {
 	router := setupTestRouter()
-	req := httptest.NewRequest("GET", "/evaluation/", nil)
+	req := httptest.NewRequest("GET", "/api/evaluation/", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusMethodNotAllowed {
@@ -560,7 +561,7 @@ func TestGetEvaluationHandler_Success(t *testing.T) {
 	}
 
 	router := setupTestRouter()
-	req := httptest.NewRequest("GET", "/evaluation/test-evaluation-456", nil)
+	req := httptest.NewRequest("GET", "/api/evaluation/test-evaluation-456", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -627,14 +628,14 @@ func TestStartChatSessionHandler_InvalidInterview(t *testing.T) {
 	clearMemoryStore()
 	router := setupTestRouter()
 
-	expectHTTPError(t, router, "POST", "/interviews/nonexistent/chat/start", nil, http.StatusNotFound)
+	expectHTTPError(t, router, "POST", "/api/interviews/nonexistent/chat/start", nil, http.StatusNotFound)
 }
 
 func TestStartChatSessionHandler_MissingInterviewID(t *testing.T) {
 	clearMemoryStore()
 	router := setupTestRouter()
 
-	expectHTTPError(t, router, "POST", "/interviews//chat/start", nil, http.StatusBadRequest)
+	expectHTTPError(t, router, "POST", "/api/interviews//chat/start", nil, http.StatusBadRequest)
 }
 
 func TestSendMessageHandler_Success(t *testing.T) {
@@ -663,7 +664,7 @@ func TestSendMessageHandler_EmptyMessage(t *testing.T) {
 
 	emptyReq := SendMessageRequestDTO{Message: ""}
 	b, _ := json.Marshal(emptyReq)
-	expectHTTPError(t, router, "POST", "/chat/"+interview.SessionID+"/message", b, http.StatusBadRequest)
+	expectHTTPError(t, router, "POST", "/api/chat/"+interview.SessionID+"/message", b, http.StatusBadRequest)
 }
 
 func TestSendMessageHandler_InvalidSession(t *testing.T) {
@@ -672,7 +673,7 @@ func TestSendMessageHandler_InvalidSession(t *testing.T) {
 
 	req := SendMessageRequestDTO{Message: "Hello"}
 	b, _ := json.Marshal(req)
-	expectHTTPError(t, router, "POST", "/chat/nonexistent/message", b, http.StatusNotFound)
+	expectHTTPError(t, router, "POST", "/api/chat/nonexistent/message", b, http.StatusNotFound)
 }
 
 func TestSendMessageHandler_InvalidJSON(t *testing.T) {
@@ -680,7 +681,7 @@ func TestSendMessageHandler_InvalidJSON(t *testing.T) {
 	router := setupTestRouter()
 
 	interview := createTestInterviewAndSession(t, router)
-	expectHTTPError(t, router, "POST", "/chat/"+interview.SessionID+"/message", []byte("{"), http.StatusBadRequest)
+	expectHTTPError(t, router, "POST", "/api/chat/"+interview.SessionID+"/message", []byte("{"), http.StatusBadRequest)
 }
 
 func TestGetChatSessionHandler_Success(t *testing.T) {
@@ -689,7 +690,7 @@ func TestGetChatSessionHandler_Success(t *testing.T) {
 
 	interview := createTestInterviewAndSession(t, router)
 
-	req := httptest.NewRequest("GET", "/chat/"+interview.SessionID, nil)
+	req := httptest.NewRequest("GET", "/api/chat/"+interview.SessionID, nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -712,7 +713,7 @@ func TestGetChatSessionHandler_NotFound(t *testing.T) {
 	clearMemoryStore()
 	router := setupTestRouter()
 
-	req := httptest.NewRequest("GET", "/chat/nonexistent", nil)
+	req := httptest.NewRequest("GET", "/api/chat/nonexistent", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -731,7 +732,7 @@ func TestEndChatSessionHandler_Success(t *testing.T) {
 	sendMessage(t, router, interview.SessionID, "I have 5 years of experience in software development")
 
 	// End the session
-	req := httptest.NewRequest("POST", "/chat/"+interview.SessionID+"/end", nil)
+	req := httptest.NewRequest("POST", "/api/chat/"+interview.SessionID+"/end", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -760,7 +761,7 @@ func TestEndChatSessionHandler_NotFound(t *testing.T) {
 	clearMemoryStore()
 	router := setupTestRouter()
 
-	expectHTTPError(t, router, "POST", "/chat/nonexistent/end", nil, http.StatusNotFound)
+	expectHTTPError(t, router, "POST", "/api/chat/nonexistent/end", nil, http.StatusNotFound)
 }
 
 // ============================================

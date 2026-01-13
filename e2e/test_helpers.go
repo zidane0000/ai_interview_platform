@@ -25,7 +25,7 @@ func GetAPIBaseURL() string {
 	if v := os.Getenv("API_BASE_URL"); v != "" {
 		return v
 	}
-	return "http://localhost:8080"
+	return "http://localhost:8080/api"
 }
 
 // CreateTestInterview creates a test interview and returns the response

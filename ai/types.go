@@ -147,6 +147,10 @@ type AIConfig struct {
 	OpenAIAPIKey string `json:"openai_api_key"`
 	GeminiAPIKey string `json:"gemini_api_key"`
 
+	// Custom endpoints (for OpenAI-compatible providers)
+	OpenAIBaseURL string `json:"openai_base_url,omitempty"` // e.g., "https://api.together.ai/v1"
+	GeminiBaseURL string `json:"gemini_base_url,omitempty"` // Custom Gemini endpoint
+
 	// Provider settings
 	DefaultProvider string `json:"default_provider"`
 	DefaultModel    string `json:"default_model"`

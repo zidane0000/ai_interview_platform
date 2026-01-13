@@ -15,15 +15,14 @@ import (
 )
 
 // HandlerDependencies contains all dependencies needed by handlers
+// Currently empty - AI clients are created per-request from user-provided keys (BYOK)
 type HandlerDependencies struct {
-	AIClient *ai.AIClient
+	// Future: Add shared dependencies here (e.g., cache, metrics, etc.)
 }
 
 // NewHandlerDependencies creates a new handler dependencies container
-func NewHandlerDependencies(aiClient *ai.AIClient) *HandlerDependencies {
-	return &HandlerDependencies{
-		AIClient: aiClient,
-	}
+func NewHandlerDependencies() *HandlerDependencies {
+	return &HandlerDependencies{}
 }
 
 // Helper: parse integer query parameter with default value
@@ -57,6 +56,58 @@ func writeJSONError(w http.ResponseWriter, status int, msg string, details ...st
 	if err := json.NewEncoder(w).Encode(errResp); err != nil {
 		utils.Errorf("failed to encode JSON: %v", err)
 	}
+}
+
+// createClientFromRequest creates an AI client from request headers (BYOK pattern)
+// Reads X-OpenAI-Key, X-Gemini-Key, and X-OpenAI-Base-URL headers from frontend
+// Supports custom OpenAI-compatible endpoints (Together.ai, Groq, etc.)
+// Falls back to mock provider if no keys provided (free demo mode)
+func createClientFromRequest(r *http.Request) *ai.AIClient {
+	openaiKey := r.Header.Get("X-OpenAI-Key")
+	geminiKey := r.Header.Get("X-Gemini-Key")
+	openaiBaseURL := r.Header.Get("X-OpenAI-Base-URL") // Custom endpoint support
+
+	// Determine provider based on which key is provided
+	var provider string
+	var model string
+
+	if openaiKey != "" {
+		provider = ai.ProviderOpenAI
+		model = "gpt-4"
+	} else if geminiKey != "" {
+		provider = ai.ProviderGemini
+		model = "gemini-pro"
+	} else {
+		// No user keys - use mock provider (free demo mode)
+		provider = ai.ProviderMock
+		model = "mock-model"
+	}
+
+	// Create ephemeral AI client for this request only
+	cfg := &ai.AIConfig{
+		OpenAIAPIKey:     openaiKey,
+		GeminiAPIKey:     geminiKey,
+		OpenAIBaseURL:    openaiBaseURL, // Custom endpoint (e.g., Together.ai, Groq)
+		DefaultProvider:  provider,
+		DefaultModel:     model,
+		MaxRetries:       2,
+		RequestTimeout:   60 * time.Second,
+		DefaultMaxTokens: 1000,
+		DefaultTemp:      0.7,
+	}
+
+	client, err := ai.NewAIClient(cfg)
+	if err != nil {
+		// Fall back to mock on error
+		utils.Warningf("Failed to create AI client with user keys, falling back to mock: %v", err)
+		mockCfg := &ai.AIConfig{
+			DefaultProvider: ai.ProviderMock,
+			DefaultModel:    "mock-model",
+		}
+		client, _ = ai.NewAIClient(mockCfg)
+	}
+
+	return client
 }
 
 // CreateInterviewHandler handles POST /interviews
@@ -246,8 +297,8 @@ func (deps *HandlerDependencies) SubmitEvaluationHandler(w http.ResponseWriter, 
 	}
 	interviewLanguage := interview.InterviewLanguage // Use interview language for evaluation
 
-	// Use shared AI client
-	aiClient := deps.AIClient
+	// Create AI client from request headers (BYOK pattern)
+	aiClient := createClientFromRequest(r)
 
 	score, feedback, err := aiClient.EvaluateAnswersWithContext(questions, answers, jobDesc, interviewLanguage)
 	if err != nil {
@@ -353,13 +404,14 @@ func (deps *HandlerDependencies) StartChatSessionHandler(w http.ResponseWriter, 
 		return
 	}
 
-	// Use shared AI client
-	aiClient := deps.AIClient
+	// Create AI client from request headers (BYOK pattern)
+	aiClient := createClientFromRequest(r)
 
 	// Generate initial AI greeting message
 	aiResponse, err := aiClient.GenerateChatResponseWithLanguage(sessionID, []map[string]string{}, "", sessionLanguage)
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Failed to generate AI response")
+		utils.Errorf("Failed to generate AI greeting: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to generate AI response", err.Error())
 		return
 	}
 
@@ -463,8 +515,8 @@ func (deps *HandlerDependencies) SendMessageHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	// Use shared AI client
-	aiClient := deps.AIClient
+	// Create AI client from request headers (BYOK pattern)
+	aiClient := createClientFromRequest(r)
 
 	// Check if interview should end BEFORE generating AI response
 	userMessageCount := 0
@@ -496,7 +548,8 @@ func (deps *HandlerDependencies) SendMessageHandler(w http.ResponseWriter, r *ht
 		aiResponse, err = aiClient.GenerateChatResponseWithLanguage(sessionID, conversationHistory, req.Message, session.SessionLanguage)
 	}
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Failed to generate AI response")
+		utils.Errorf("Failed to generate AI chat response: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to generate AI response", err.Error())
 		return
 	}
 
@@ -656,8 +709,8 @@ func (deps *HandlerDependencies) EndChatSessionHandler(w http.ResponseWriter, r 
 	}
 	sessionLanguage := session.SessionLanguage // Use session language for evaluation
 
-	// Use shared AI client
-	aiClient := deps.AIClient
+	// Create AI client from request headers (BYOK pattern)
+	aiClient := createClientFromRequest(r)
 
 	score, feedback, err := aiClient.EvaluateAnswersWithContext(questions, userAnswers, jobDesc, sessionLanguage)
 	if err != nil {

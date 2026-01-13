@@ -13,6 +13,7 @@ import type {
 import { mockApi } from './mockApi';
 import { logger } from '../utils/logger';
 import { retryApiCall } from './retryService';
+import { getOpenAIKey, getGeminiKey, getOpenAIBaseURL } from '../utils/apiKeyStorage';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
@@ -25,9 +26,24 @@ const api = axios.create({
   timeout: 10000, // 10 seconds timeout
 });
 
-// Request interceptor
+// Request interceptor - Add BYOK API keys to headers
 api.interceptors.request.use(  (config) => {
-    // Add any auth headers or other request modifications here
+    // Add user's API keys from LocalStorage (BYOK pattern)
+    const openaiKey = getOpenAIKey();
+    const geminiKey = getGeminiKey();
+    const openaiBaseURL = getOpenAIBaseURL();
+
+    if (openaiKey) {
+      config.headers['X-OpenAI-Key'] = openaiKey;
+    }
+    if (geminiKey) {
+      config.headers['X-Gemini-Key'] = geminiKey;
+    }
+    // Add custom OpenAI-compatible endpoint (e.g., Together.ai, Groq, Perplexity)
+    if (openaiBaseURL) {
+      config.headers['X-OpenAI-Base-URL'] = openaiBaseURL;
+    }
+
     logger.apiDebug(config.url || 'unknown', config.method?.toUpperCase() || 'UNKNOWN');
     return config;
   },

@@ -9,9 +9,11 @@ import InterviewDetail from './pages/InterviewDetail';
 import TakeInterview from './pages/TakeInterview';
 import EvaluationResult from './pages/EvaluationResult';
 import Changelog from './pages/Changelog';
+import Settings from './pages/Settings';
 import I18nTestPage from './components/I18nTestPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import ModeIndicator from './components/ModeIndicator';
+import ApiKeyPrompt from './components/ApiKeyPrompt';
 import { theme } from './theme';
 
 function App() {
@@ -67,16 +69,27 @@ function App() {
                   >
                     {t('common:navigation.history')}
                   </Button>
-                  <Button 
+                  <Button
                     component={Link}
                     to="/changelog"
                     color="inherit"
-                    sx={{ 
+                    sx={{
                       fontWeight: 500,
                       '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
                     }}
                   >
                     {t('common:navigation.changelog')}
+                  </Button>
+                  <Button
+                    component={Link}
+                    to="/settings"
+                    color="inherit"
+                    sx={{
+                      fontWeight: 500,
+                      '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+                    }}
+                  >
+                    Settings
                   </Button>
                   <LanguageSwitcher />
                 </Box>
@@ -85,10 +98,12 @@ function App() {
           </AppBar>
           
           <ModeIndicator />
-          
+          <ApiKeyPrompt />
+
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/history" element={<History />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/changelog" element={<Changelog />} />
             <Route path="/i18n-test" element={<I18nTestPage />} />
             <Route path="/interview/:id" element={<InterviewDetail />} />
