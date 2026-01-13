@@ -1,0 +1,53 @@
+{
+  "appName": "AI Mock Interview Practice",
+  "buttons": {
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "start": "Start",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "back": "Back",
+    "retry": "Retry",    "download": "Download",
+    "details": "Details",
+    "startInterview": "Start Interview"
+  },
+  "navigation": {
+    "home": "Home",
+    "interviews": "Interviews",
+    "history": "History",
+    "results": "Results",
+    "changelog": "Changelog"
+  },
+  "accessibility": {
+    "createInterview": "Create new interview"
+  },
+  "status": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "pending": "Pending",
+    "completed": "Completed",
+    "draft": "Draft"
+  },
+  "languages": {
+    "en": "English",
+    "zh-TW": "繁體中文",
+    "auto": "Auto-detect",
+    "selectLanguage": "Select Language",
+    "interviewLanguage": "Interview Language",
+    "uiLanguage": "Display Language"
+  },
+  "errors": {
+    "networkError": "Unable to connect to server. Please make sure the backend is running on http://localhost:8080",
+    "serverError": "Server error: {{status}}. Please try again.",
+    "loadInterviews": "Failed to load interviews. Please try again.",
+    "loadInterview": "Failed to load interview details",
+    "validationError": "Please fill in all required fields.",
+    "unknownError": "An unknown error occurred. Please try again."
+  }
+}

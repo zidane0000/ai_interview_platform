@@ -1,0 +1,36 @@
+{
+  "evaluation": {
+    "criteria": {
+      "clarity": "Clarity",
+      "relevance": "Relevance", 
+      "depth": "Depth",
+      "communication": "Communication Skills",
+      "technical": "Technical Knowledge",
+      "problemSolving": "Problem Solving"
+    },
+    "scores": {
+      "excellent": "Excellent",
+      "good": "Good", 
+      "average": "Average",
+      "needsImprovement": "Needs Improvement",
+      "poor": "Poor"
+    },
+    "feedback": {
+      "strengths": "Your strengths include:",
+      "improvements": "Areas to focus on for improvement:",
+      "recommendations": "Recommendations for next steps:"
+    }
+  },
+  "questions": {
+    "types": {
+      "general": "General",
+      "technical": "Technical",
+      "behavioral": "Behavioral"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium", 
+      "hard": "Hard"
+    }
+  }
+}

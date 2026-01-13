@@ -1,0 +1,36 @@
+{
+  "evaluation": {
+    "criteria": {
+      "clarity": "表達清晰度",
+      "relevance": "回答相關性",
+      "depth": "內容深度",
+      "communication": "溝通技巧",
+      "technical": "技術知識",
+      "problemSolving": "問題解決能力"
+    },
+    "scores": {
+      "excellent": "優秀",
+      "good": "良好",
+      "average": "普通",
+      "needsImprovement": "需要改進",
+      "poor": "待加強"
+    },
+    "feedback": {
+      "strengths": "您的優勢包括：",
+      "improvements": "需要重點改進的領域：",
+      "recommendations": "下一步建議："
+    }
+  },
+  "questions": {
+    "types": {
+      "general": "一般",
+      "technical": "技術",
+      "behavioral": "行為"
+    },
+    "difficulty": {
+      "easy": "簡單",
+      "medium": "中等",
+      "hard": "困難"
+    }
+  }
+}

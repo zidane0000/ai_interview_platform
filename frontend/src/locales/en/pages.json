@@ -1,0 +1,190 @@
+{
+  "home": {
+    "title": "AI Mock Interview Practice",
+    "subtitle": "Practice makes perfect - simulate real interview scenarios with AI",
+    "candidateInfo": "Candidate Information",
+    "candidateName": "Candidate Name",
+    "candidateNamePlaceholder": "Enter full candidate name",
+    "resumeUpload": "Upload Resume (CV) - Optional",
+    "resumeSupported": "Supports PDF, PNG, DOC or DOCX formats",
+    "resumeDropzone": "Click to upload or drag files here",
+    "resumeFormats": "PDF, PNG, DOC, or DOCX",
+    "resumeUploaded": "✓ File uploaded",
+    "jobDescription": "Job Description - Optional",
+    "jobDescriptionSubtitle": "Enter job description, AI will generate relevant questions based on this information",
+    "jobDescriptionPlaceholder": "Enter job description...",
+    "customQuestions": "Custom Interview Questions ({{count}}) - Optional",
+    "customQuestionsSubtitle": "You can add specific questions, or leave empty to let AI automatically generate suitable questions based on interview type",
+    "addQuestion": "Add Question",
+    "questionPlaceholder": "Enter your question...",
+    "questionsList": "Interview Questions List:",
+    "interviewType": "Interview Type",
+    "interviewTypeSubtitle": "Choose interview type, AI will automatically generate corresponding professional questions (if you haven't customized questions)",
+    "interviewTypes": {
+      "general": "General",
+      "generalDesc": "Comprehensive interview questions covering background, strengths, career planning, etc.",
+      "technical": "Technical",
+      "technicalDesc": "Professional technical questions, suitable for engineers and technical positions",
+      "behavioral": "Behavioral",
+      "behavioralDesc": "Situational and behavioral questions to assess soft skills and teamwork abilities"
+    },
+    "createInterview": "Create Interview",
+    "creating": "Creating...",
+    "fillCandidateName": "Please fill in candidate name to start practice (questions are optional, AI will automatically supplement)",
+    "createNewInterview": "Create New Interview",
+    "recentInterviews": "Recent Interviews",
+    "noInterviews": "No interviews yet. Create your first mock interview to get started!",
+    "questionsCount": "{{count}} Questions",
+    "questionsPreview": "Questions Preview:",
+    "searchPlaceholder": "Search by candidate name...",
+    "sortBy": "Sort by",
+    "sortByDate": "Date",
+    "sortByName": "Name",
+    "sortByStatus": "Status",
+    "sortOrder": "Order",
+    "sortOrderDesc": "Newest first",
+    "sortOrderAsc": "Oldest first",
+    "resultsSummary": "Showing {{showing}} of {{total}} interviews (Page {{page}} of {{totalPages}})",
+    "featuresTitle": "Why Choose Our Platform?",
+    "features": {
+      "ai": {
+        "title": "AI-Powered Questions",
+        "description": "Generate intelligent questions based on your interview type and requirements"
+      },
+      "realtime": {
+        "title": "Real-time Feedback",
+        "description": "Get instant feedback on your responses to improve your performance"
+      },
+      "analytics": {
+        "title": "Detailed Analytics",
+        "description": "Track your progress with comprehensive performance analytics"
+      }
+    }
+  },
+  "interviewDetail": {
+    "title": "Interview Details",
+    "candidate": "Candidate Information",
+    "type": "Type",
+    "questions": "Interview Questions",
+    "questionsDescription": "The candidate will be asked the following questions:",
+    "createdAt": "Created on",
+    "startInterview": "Start Interview",
+    "editInterview": "Edit Interview",
+    "deleteInterview": "Delete Interview",
+    "confirmDelete": "Are you sure you want to delete this interview?",
+    "interviewNotFound": "Interview not found",
+    "interviewSummary": "Interview Summary",
+    "interviewId": "Interview ID",
+    "numberOfQuestions": "Number of Questions",
+    "estimatedDuration": "Estimated Duration",
+    "minutes": "minutes",
+    "instructions": "Instructions",
+    "instructionsList": [
+      "Take your time to read each question carefully",
+      "Provide detailed and honest answers",
+      "You can navigate between questions",
+      "Submit when all questions are answered",
+      "AI evaluation will be provided after submission"
+    ],
+    "interviewLanguage": "Interview Language",
+    "languageDescription": "Choose the interview language.",
+    "changeLanguage": "Change Language"
+  },
+  "takeInterview": {
+    "title": "Interview Session",
+    "interviewTitle": "Interview: {{candidate}}",
+    "completed": "Interview Completed",
+    "inProgress": "Interview in Progress",
+    "startingSession": "Starting interview session...",
+    "loadingInterview": "Loading interview...",    "sessionError": "Failed to initialize interview session",    "processing": "Processing...",
+    "evaluate": "Evaluate",
+    "viewResults": "View Results",
+    "aiTyping": "AI is typing...",
+    "responsePlaceholder": "Type your response here...",
+    "questionProgress": "Question {{current}} of {{total}}",
+    "yourAnswer": "Your Answer",
+    "answerPlaceholder": "Type your answer here...",
+    "nextQuestion": "Next Question",
+    "finishInterview": "Finish Interview",
+    "confirmFinish": "Are you sure you want to finish the interview? You won't be able to modify your answers afterwards."
+  },
+  "evaluationResult": {
+    "title": "Interview Evaluation Results",
+    "completedOn": "Completed on",
+    "overallPerformance": "Overall Performance",
+    "overallScore": "Overall Score",
+    "detailedFeedback": "Detailed Feedback",
+    "strengths": "Strengths",
+    "improvements": "Areas for Improvement",
+    "recommendations": "Recommendations",
+    "backToHome": "Back to Home",
+    "retakeInterview": "Retake Interview",
+    "evaluationNotFound": "Evaluation not found",
+    "failedToLoad": "Failed to load evaluation results",
+    "performanceBreakdown": "Performance Breakdown",
+    "aiFeedback": "AI Feedback & Recommendations",
+    "evaluationDetails": "Evaluation Details",
+    "evaluationId": "Evaluation ID",
+    "interviewId": "Interview ID",
+    "score": "Score",
+    "evaluationDate": "Evaluation Date",
+    "grade": "Grade",
+    "completed": "Completed",
+    "evaluated": "Evaluated",
+    "nextSteps": "Next Steps",
+    "nextStepsList": [
+      "Review the AI feedback carefully",
+      "Work on suggested improvement areas",
+      "Practice similar questions",
+      "Consider taking another interview",
+      "Share results with your team"
+    ],
+    "nextStepsDescription": "Based on your performance:",
+    "scoreLabels": {
+      "excellent": "Excellent",
+      "veryGood": "Very Good",
+      "good": "Good",
+      "fair": "Fair",
+      "needsImprovement": "Needs Improvement"
+    }
+  },
+  "changelog": {
+    "title": "Changelog",
+    "subtitle": "Stay up to date with all the latest features, improvements and fixes.",
+    "backToHome": "Back to Home",
+    "version": "Version",
+    "releaseDate": "Release Date",
+    "improvements": "Improvements",
+    "bugFixes": "Bug Fixes",
+    "newFeatures": "New Features",
+    "updates": "Updates",
+    "footerTitle": "Continuous Improvement",
+    "footerMessage": "We continuously update and improve AI Interview Platform to provide you with a better interview experience. If you have any suggestions or questions, feel free to contact us anytime!",
+    "typeLabels": {
+      "improvement": "Improvement",
+      "fix": "Fix",
+      "new": "New Feature",
+      "update": "Update"
+    },
+    "v1_0": {
+      "date": "May 31, 2025",
+      "changes": [
+        "🎉 Brand new AI Interview Platform officially launched",
+        "📝 Smart interview question generation and management system",
+        "🤖 AI-driven interview assessment and feedback",
+        "💼 Support for multiple interview types: General, Technical, Behavioral",
+        "📱 Modern responsive UI design",
+        "⚡ Quick interview creation and management",
+        "📊 Detailed interview progress tracking",
+        "🔒 Secure and reliable data processing"
+      ]
+    }
+  },
+  "i18nTest": {
+    "title": "Language Switch Test",
+    "pageTitle": "Internationalization (i18n) Test Page",
+    "currentLanguage": "Current Language:",
+    "translationKeys": "Translation Key Tests",
+    "languageSwitch": "Language Switch Test"
+  }
+}

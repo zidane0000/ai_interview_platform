@@ -1,0 +1,67 @@
+# Golang specific
+*.exe
+*.test
+*.out
+*.prof
+app          # Compiled binary
+
+# Dependency directories
+vendor/
+
+# IDE/editor specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment variables (actual secrets only)
+.env
+.env.local
+# NOTE: .env.development, .env.mock, .env.production are templates and should be committed
+
+# API keys and secrets
+secrets.json
+config/secrets.go
+config/secrets.json
+
+# Build outputs
+bin/
+dist/
+build/
+
+# Frontend specific
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Coverage reports
+coverage.txt
+coverage.html
+
+# Backup files (development artifacts)
+*_old.*
+*_new.*
+*_backup.*
+*.bak
