@@ -14,7 +14,7 @@ import { mockApi } from './mockApi';
 import { logger } from '../utils/logger';
 import { retryApiCall } from './retryService';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
 const api = axios.create({
