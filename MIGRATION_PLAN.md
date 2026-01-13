@@ -12,7 +12,7 @@
 | Question | Decision | Rationale |
 |----------|----------|-----------|
 | **Retry Strategy** | Keep frontend retry (reuse existing) | Already implemented, no extra code |
-| **Mock API** | Simplify to ~150 lines | Easier maintenance, GitHub Actions testing |
+| **Mock API** | Keep as-is (622 lines) REVISED | Valuable dev tool for frontend-only development |
 | **Database** | PostgreSQL from day 1 | Already implemented, Railway provides free DB |
 | **AI Features** | Keep: Multiple providers (OpenAI, Gemini, Mock)<br>Remove: Metrics, caching, factory pattern  DONE | MVP simplicity, ~692 lines removed |
 | **Data Layer** | Keep hybrid_store.go (Adapter pattern)  REVISED | Good architecture for MVP flexibility |
@@ -192,37 +192,24 @@ router.Handle("/*", http.FileServer(http.FS(frontendDist)))
 
 ---
 
-### **Phase 5: Frontend Simplification** (2 hours)
+### **Phase 5: Frontend Refinement** REVISED
 
-#### **5.1: Simplify Mock API**
+#### **5.1: Keep Mock API** REVISED - NO CHANGES NEEDED
 
-**File to modify: `frontend/src/services/mockApi.ts`**
+**DECISION: Keep mockApi.ts as-is (622 lines)**
 
-**Before:** 622 lines (12 hardcoded interviews, complex AI simulation)
-**After:** ~150 lines (generated data, simple responses)
+After comprehensive analysis, mockApi.ts is **NOT over-engineered**:
+- Provides complete mock backend for frontend-only development
+- Language-aware AI responses (EN/ZH-TW) with 8 progressive questions
+- Realistic data (12 diverse interviews, international names)
+- Proper pagination, filtering, sorting simulation
+- Chat session state management
+- Enables GitHub Actions testing without backend
+- Critical value for solo developer workflow
 
-**New structure:**
-```typescript
-// Helper to generate mock data
-function generateMockInterview(id: number) { ... }
-const MOCK_INTERVIEWS = Array.from({length: 12}, (_, i) => generateMockInterview(i));
+**Original plan was WRONG** - assumed it was duplication, but it's actually a valuable development tool.
 
-// Simplified API - just return data with delays
-export const mockApi = {
-    createInterview: async (data) => { await delay(500); return {...}; },
-    getInterviews: async () => { await delay(300); return MOCK_INTERVIEWS; },
-    sendMessage: async (sessionId, msg) => {
-        await delay(800);
-        return { ai_response: "Mock response to: " + msg.message };
-    },
-    // ... other methods
-};
-```
-
-**Remove:**
-- Complex AI question flow logic (lines 350-500)
-- Detailed interview state tracking
-- Keep only basic CRUD operations + simple chat
+**NO ACTION NEEDED** - Keep all 622 lines
 
 ---
 
@@ -256,30 +243,39 @@ function App() {
 
 ---
 
-#### **5.3: Update API Configuration**
+#### **5.3: Update API Configuration** PARTIALLY DONE
 
-**Modify: `frontend/src/services/api.ts`**
+**STATUS:**
+- .env.development - DONE in Phase 4.3 (updated to http://localhost:8080/api)
+- .env.production - DONE in Phase 4.3 (updated to /api)
+- api.ts default URL - NOT DONE YET
 
-Change base URL:
+**Remaining change: `frontend/src/services/api.ts` line 17**
+
+Update default URL for production builds:
 ```typescript
 // Before
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-// After (for production build)
+// After (fallback to /api for production)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 ```
 
-**UPDATE: `frontend/.env.development`**
-```bash
-VITE_API_BASE_URL=http://localhost:8080/api  # For dev mode (separate servers)
-VITE_USE_MOCK_DATA=false
-```
+This ensures production builds work even if VITE_API_BASE_URL is not set.
 
-**UPDATE: `frontend/.env.production`** (already exists from Phase 3)
-```bash
-VITE_API_BASE_URL=/api  # Relative path for production
-VITE_USE_MOCK_DATA=false
-```
+---
+
+#### **5.4: Remove Unused Files** NEW
+
+**Check if CreateInterview.tsx is used:**
+- Home.tsx handles interview creation
+- CreateInterview.tsx (274 lines) might be unused duplicate
+- Search codebase for imports/references
+
+**If unused:**
+- Delete frontend/src/pages/CreateInterview.tsx
+- Remove from App.tsx routes (if present)
+- Impact: -274 lines
 
 ---
 
@@ -517,11 +513,11 @@ Total: ~5000 lines, 2 repos, 2 deploys
 ### **After (Monorepo)**  REVISED
 
 ```
-ai-interview-platform/    (~4300 lines total)
-  ├── frontend/           (~2400 lines after mock simplification)
+ai-interview-platform/    (~4800 lines total)
+  ├── frontend/           (~3000 lines - kept mockApi)
   │   └── src/
   │       └── services/
-  │           └── mockApi.ts (~150 lines)
+  │           └── mockApi.ts (622 lines - KEPT, valuable dev tool)
   ├── api/                (~850 lines)
   ├── ai/                 (~2155 lines - removed 692 lines)
   │   ├── client.go       (210 lines - simplified)
@@ -529,12 +525,14 @@ ai-interview-platform/    (~4300 lines total)
   │   ├── gemini_provider.go (540 lines - kept)
   │   └── mock_provider.go (129 lines - kept)
   ├── data/               (~900 lines - kept hybrid_store)
-  │   └── hybrid_store.go (211 lines - KEPT, good architecture)
+  │   └── hybrid_store.go (211 lines - KEPT, Adapter pattern)
   └── main.go             (+ static serving)
 
-Total: ~4300 lines, 1 repo, 1 deploy
-Reduction: ~700-1200 lines (mainly AI metrics/caching + mock API)
-Percentage: ~15-25% reduction
+Total: ~4800 lines, 1 repo, 1 deploy
+Reduction: ~700 lines (AI metrics/caching only, kept mockAPI)
+Percentage: ~12-15% reduction
+
+Note: Kept mockApi.ts - provides huge value for solo developer workflow
 ```
 
 ---
@@ -556,9 +554,9 @@ Percentage: ~15-25% reduction
 - [ ] Railway deployment succeeds
 
 ### **Code Quality:**
-- [ ] ~700-1200 lines deleted (15-25% reduction)  REVISED
+- [ ] ~700 lines deleted (12-15% reduction) REVISED AGAIN
 - [ ] Simplified AI layer (removed metrics/caching, kept providers)
-- [ ] Kept hybrid_store.go (good Adapter pattern architecture)
+- [ ] Kept hybrid_store.go (Adapter pattern) and mockApi.ts (dev tool)
 - [ ] Clean monorepo structure
 - [ ] Updated documentation
 
