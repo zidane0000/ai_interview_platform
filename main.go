@@ -4,9 +4,12 @@ package main
 
 import (
 	"context"
+	"embed"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,6 +18,38 @@ import (
 	"github.com/zidane0000/ai-interview-platform/data"
 	"github.com/zidane0000/ai-interview-platform/utils"
 )
+
+//go:embed frontend/dist
+var frontendFS embed.FS
+
+// spaHandler serves the SPA (Single Page Application) with fallback to index.html
+// This allows React Router to handle client-side routing
+func spaHandler() http.Handler {
+	// Get the frontend filesystem from the embedded FS
+	frontendDist, err := fs.Sub(frontendFS, "frontend/dist")
+	if err != nil {
+		utils.Errorf("Failed to create frontend filesystem: %v", err)
+		// Return a simple error handler
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "Frontend not available", http.StatusServiceUnavailable)
+		})
+	}
+
+	fileServer := http.FileServer(http.FS(frontendDist))
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/")
+
+		// Try to open the file
+		_, err := frontendDist.Open(path)
+		if err != nil {
+			// File doesn't exist, serve index.html for SPA routing
+			r.URL.Path = "/"
+		}
+
+		fileServer.ServeHTTP(w, r)
+	})
+}
 
 // gracefulShutdown handles graceful shutdown of the application
 func gracefulShutdown(server *http.Server, timeout time.Duration) {
@@ -81,15 +116,9 @@ func main() {
 	//     utils.Errorf("store health check failed: %v", err)
 	// }
 
-	// AI clients are now created per-request using the factory pattern
-	// No global initialization needed - clients are created by handlers as needed
-	utils.Infof("AI client factory will be used for per-request client creation")
-	// TODO: Initialize file upload directory and permissions
-	// if err := os.MkdirAll(cfg.UploadPath, 0755); err != nil {
-	//     utils.Errorf("failed to create upload directory: %v", err)
-	// }
-	// Set up router with injected config
-	router := api.SetupRouter(cfg)
+	// Set up router with injected config (includes API routes and frontend serving)
+	frontendHandler := spaHandler()
+	router := api.SetupRouter(cfg, frontendHandler)
 	// TODO: Add HTTPS support with TLS configuration
 	// TODO: Add health check endpoints
 	// TODO: Add metrics and monitoring endpoints
