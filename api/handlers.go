@@ -16,13 +16,13 @@ import (
 
 // HandlerDependencies contains all dependencies needed by handlers
 type HandlerDependencies struct {
-	AIClientFactory *ai.AIClientFactory
+	AIClient *ai.AIClient
 }
 
 // NewHandlerDependencies creates a new handler dependencies container
-func NewHandlerDependencies(aiClientFactory *ai.AIClientFactory) *HandlerDependencies {
+func NewHandlerDependencies(aiClient *ai.AIClient) *HandlerDependencies {
 	return &HandlerDependencies{
-		AIClientFactory: aiClientFactory,
+		AIClient: aiClient,
 	}
 }
 
@@ -246,12 +246,8 @@ func (deps *HandlerDependencies) SubmitEvaluationHandler(w http.ResponseWriter, 
 	}
 	interviewLanguage := interview.InterviewLanguage // Use interview language for evaluation
 
-	// Create AI client for this request
-	aiClient, err := deps.AIClientFactory.CreateDefaultClient()
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Failed to create AI client")
-		return
-	}
+	// Use shared AI client
+	aiClient := deps.AIClient
 
 	score, feedback, err := aiClient.EvaluateAnswersWithContext(questions, answers, jobDesc, interviewLanguage)
 	if err != nil {
@@ -357,12 +353,8 @@ func (deps *HandlerDependencies) StartChatSessionHandler(w http.ResponseWriter, 
 		return
 	}
 
-	// Create AI client for this request
-	aiClient, err := deps.AIClientFactory.CreateDefaultClient()
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Failed to create AI client")
-		return
-	}
+	// Use shared AI client
+	aiClient := deps.AIClient
 
 	// Generate initial AI greeting message
 	aiResponse, err := aiClient.GenerateChatResponseWithLanguage(sessionID, []map[string]string{}, "", sessionLanguage)
@@ -471,12 +463,8 @@ func (deps *HandlerDependencies) SendMessageHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	// Create AI client for this request
-	aiClient, err := deps.AIClientFactory.CreateDefaultClient()
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Failed to create AI client")
-		return
-	}
+	// Use shared AI client
+	aiClient := deps.AIClient
 
 	// Check if interview should end BEFORE generating AI response
 	userMessageCount := 0
@@ -668,12 +656,8 @@ func (deps *HandlerDependencies) EndChatSessionHandler(w http.ResponseWriter, r 
 	}
 	sessionLanguage := session.SessionLanguage // Use session language for evaluation
 
-	// Create AI client for this request
-	aiClient, err := deps.AIClientFactory.CreateDefaultClient()
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Failed to create AI client")
-		return
-	}
+	// Use shared AI client
+	aiClient := deps.AIClient
 
 	score, feedback, err := aiClient.EvaluateAnswersWithContext(questions, userAnswers, jobDesc, sessionLanguage)
 	if err != nil {

@@ -13,11 +13,18 @@ import (
 // SetupRouter initializes the HTTP routes for the API using chi
 // Config is injected from main.go to avoid loading configuration multiple times
 func SetupRouter(cfg *config.Config) http.Handler {
-	// Create AI client factory with injected config
-	aiClientFactory := ai.NewAIClientFactory(*cfg)
+	// Create AI client with configuration (simplified - no factory pattern)
+	aiConfig := ai.NewDefaultAIConfig()
+	aiClient, err := ai.NewAIClient(aiConfig)
+	if err != nil {
+		utils.Errorf("Failed to create AI client: %v", err)
+		// Fall back to mock provider if client creation fails
+		aiConfig.DefaultProvider = ai.ProviderMock
+		aiClient, _ = ai.NewAIClient(aiConfig)
+	}
 
 	// Create handler dependencies
-	deps := NewHandlerDependencies(aiClientFactory)
+	deps := NewHandlerDependencies(aiClient)
 
 	r := chi.NewRouter()
 
