@@ -38,8 +38,32 @@ jobs:
             frontend:
               - 'frontend/**'
 
+  frontend-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      built: 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Build frontend
+        run: cd frontend && npm ci && npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 1
+
   backend-test:
-    needs: changes
+    needs: [changes, frontend-build]
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     permissions:
@@ -68,11 +92,15 @@ jobs:
           go-version: '1.23'
           cache: true
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
       - name: Run unit tests with coverage
         run: |
           go test -race -coverprofile coverage.out -covermode atomic $(go list ./... | grep -v /e2e)
           go tool cover -func coverage.out
-          echo "Coverage report generated (threshold check disabled - will add back later)"
 
       - name: Build backend
         run: go build -o app
@@ -95,7 +123,7 @@ jobs:
         run: kill $(cat backend.pid) || true
 
   frontend-test:
-    needs: changes
+    needs: [changes, frontend-build]
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     permissions:
@@ -110,14 +138,16 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'frontend/package-lock.json'
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
       - name: Install dependencies
         run: cd frontend && npm ci
 
       - name: Lint
         run: cd frontend && npm run lint
-
-      - name: Build frontend
-        run: cd frontend && npm run build
 
       - name: Verify build artifacts
         run: test -d frontend/dist && echo "Frontend built successfully"
@@ -127,12 +157,13 @@ jobs:
           cd frontend
           VITE_USE_MOCK_DATA=true npm run dev &
           DEV_PID=$!
-          # Wait up to 30 seconds for server to be ready
           timeout 30 bash -c 'until curl -f http://localhost:5173 >/dev/null 2>&1; do sleep 1; done'
           kill $DEV_PID || true
           echo "Mock mode works successfully"
 
   integration-build:
+    needs: [changes, frontend-build]
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -144,16 +175,13 @@ jobs:
           go-version: '1.23'
           cache: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/download-artifact@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+          name: frontend-dist
+          path: frontend/dist
 
       - name: Build complete application
-        run: |
-          cd frontend && npm ci && npm run build
-          cd .. && go build -o app
+        run: go build -o app
 
       - name: Verify monorepo build
         run: |
