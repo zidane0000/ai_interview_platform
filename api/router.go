@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zidane0000/ai-interview-platform/config"
 	"github.com/zidane0000/ai-interview-platform/utils"
 )
@@ -20,6 +21,10 @@ func SetupRouter(cfg *config.Config, frontendHandler http.Handler) http.Handler 
 	deps := NewHandlerDependencies()
 
 	r := chi.NewRouter()
+
+	// Defense in depth middleware
+	r.Use(middleware.Recoverer)            // Returns 500 on panic instead of connection drop
+	r.Use(middleware.RequestSize(1 << 20)) // 1MB body limit
 
 	r.Use(CORSMiddleware)
 	r.Use(LoggingMiddleware)
